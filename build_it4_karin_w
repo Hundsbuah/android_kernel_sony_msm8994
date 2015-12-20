@@ -6,6 +6,8 @@ rm -f ../final_files/boot.img
 export ARCH=arm64
 export PATH=/home/xubuntu/git/aarch64-linux-android-4.9-kernel/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
+#export PATH=/home/xubuntu/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/bin/:$PATH
+#export CROSS_COMPILE=aarch64-linux-gnu-
 export KBUILD_DIFFCONFIG=karin_windy_diffconfig
 
 make kitakami_defconfig
@@ -28,7 +30,7 @@ if [ -f arch/arm64/boot/Image ]
       mv boot_SGP712.img boot.img
       find . -name "Lowi.zip" -exec zip -d {} boot.img \;
       find . -name "Lowi.zip" -exec zip -u {} boot.img \;
-      zip -d Lowi.zip system/ \;
-      zip -r Lowi.zip system/ \;
+      zip -d Lowi.zip system/;
+      zip -r Lowi.zip system/;
    fi
 fi
