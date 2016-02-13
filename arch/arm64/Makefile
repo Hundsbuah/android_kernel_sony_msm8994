@@ -33,6 +33,14 @@ endif
 
 comma = ,
 
+#
+# The Scalar Replacement of Aggregates (SRA) optimization pass in GCC 4.9 and
+# later may result in code being generated that handles signed short and signed
+# char struct members incorrectly. So disable it.
+# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65932)
+#
+KBUILD_CFLAGS	+= $(call cc-option,-fno-ipa-sra)
+
 CHECKFLAGS	+= -D__aarch64__
 
 # Default value
@@ -47,6 +55,7 @@ core-y		+= arch/arm64/kernel/ arch/arm64/mm/
 core-$(CONFIG_XEN)		+= arch/arm64/xen/
 core-$(CONFIG_KVM) += arch/arm64/kvm/
 core-$(CONFIG_CRYPTO) += arch/arm64/crypto/
+core-$(CONFIG_THUNDERPLUG_CONTROL) += arch/arm64/hotplug/
 libs-y		:= arch/arm64/lib/ $(libs-y)
 libs-y		+= $(LIBGCC)
 
