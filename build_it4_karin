@@ -1,51 +1,36 @@
 ### GCC 4.9.x
-### I'm using UBERTC https://bitbucket.org/UBERTC/arm-eabi-4.9
 
-if [ ! -e ./arch/arm/boot/dts/msm8994-v1-kitakami_karin_generic.dtb ]; then
 rm ./arch/arm/boot/dts/*.dtb
-fi
+rm -f ../final_files/boot.img
 
 export ARCH=arm64
-export PATH=~/aarch64-linux-android-4.9-kernel/bin/:$PATH
-### See prefix of file names in the toolchain's bin directory
+export PATH=/home/xubuntu/git/aarch64-linux-android-4.9-kernel/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
-
+#export PATH=/home/xubuntu/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/bin/:$PATH
+#export CROSS_COMPILE=aarch64-linux-gnu-
 export KBUILD_DIFFCONFIG=karin_diffconfig
+
 make kitakami_defconfig
-make
+make -j8
+
+cp `find ./ | grep .ko$` modules.order ../final_files/system/lib/modules/
 
 echo "checking for compiled kernel..."
 if [ -f arch/arm64/boot/Image ]
-then
+   then
 
-echo "generating device tree..."
-make dtbs
-../final_files/dtbToolCM --force-v2 -o ../final_files/dt.img -s 2048 -p ./scripts/dtc/ ./arch/arm/boot/dts/
+   echo "generating device tree..."
+   make dtbs
+   ../final_files/dtbToolCM --force-v2 -o ../final_files/dt.img -s 2048 -p ./scripts/dtc/ ./arch/arm/boot/dts/
+   ../final_files/mkbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-7 dwc3_msm.prop_chg_detect=Y coherent_pool=2M androidboot.selinux=permissive" --base 0x00000000 --kernel arch/arm64/boot/Image --ramdisk ../final_files/andro771.img-ramdisk.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_SGP771.img --dt ../final_files/dt.img --tags_offset 0x01E00000
 
-### copy zImage
-#cp arch/arm64/boot/Image ../final_files/. 
-
-echo "DONE"
-
-fi
-
-### SGP771
-../final_files/mkbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-7 dwc3_msm.prop_chg_detect=Y coherent_pool=2M androidboot.selinux=permissive" --base 0x00000000 --kernel arch/arm64/boot/Image --ramdisk ../final_files/ramdiskSGP771.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_SGP771.img --dt ../final_files/dt.img --tags_offset 0x01E00000
-
-if [ -e ../final_files/boot_SGP771.img ]
-then
-
-### Zip boot.img
-cd ../final_files/
-mv boot_SGP771.img boot.img
-zip Z4T_SGP771_AndroPlusKernel_v.zip boot.img
-rm -f boot.img
-
-### Version number
-echo -n "Enter version number: "
-read version
-
-### Copy zip to my desktop
-dd if=Z4T_SGP771_AndroPlusKernel_v.zip of="/mnt/hgfs/VMShare/デスクトップ/Z4T_SGP771_AndroPlusKernel_v$version.zip"
-
+   if [ -e ../final_files/boot_SGP771.img ]
+      then
+      cd ../final_files/
+      mv boot_SGP771.img boot.img
+      find . -name "Lowi771.zip" -exec zip -d {} boot.img \;
+      find . -name "Lowi771.zip" -exec zip -u {} boot.img \;
+      zip -d Lowi771.zip system/;
+      zip -r Lowi771.zip system/;
+   fi
 fi
